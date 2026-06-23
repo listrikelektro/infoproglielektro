@@ -3,38 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOE Enterprise CMS Signage - v4.6.0 Production</title>
+    <title>BOE Enterprise CMS Signage - v4.6.0 Secure Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { background: #020617; color: white; margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
-        
-        /* Navigation Sidebar Styles */
         .sidebar-icon { cursor: pointer; transition: 0.3s; opacity: 0.5; color: #94a3b8; position: relative; }
         .sidebar-icon:hover, .active { opacity: 1; color: #22d3ee; transform: scale(1.1); }
         .nav-btn { background: #1e293b; border-radius: 10px; padding: 10px; border: 1px solid #334155; color: #94a3b8; transition: 0.2s; }
         .nav-btn:hover { background: #334155; color: #22d3ee; border-color: #22d3ee; }
-        
-        /* CMS Split Media Explorer Layout */
         .media-layout { display: flex; height: 100vh; width: 100%; }
         .media-sidebar { width: 320px; background: #090d16; border-right: 1px solid #1e293b; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
         .media-viewer { flex: 1; background: #000; position: relative; }
-        
-        /* Jadwal Card Components */
         .jadwal-card { background: linear-gradient(145deg, #0f172a, #020617); border: 1px solid #1e293b; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
         .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 4px; margin-top: 2px; }
         .info-box { background: rgba(30, 41, 59, 0.25); padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(51, 65, 85, 0.3); max-height: 58px; overflow-y: auto; }
         .info-box::-webkit-scrollbar { width: 3px; }
         .info-box::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        
         .label-mini { font-size: 9px; color: #475569; font-weight: 800; text-transform: uppercase; margin-bottom: 1px; }
         .val-mini { font-size: 12px; color: #e2e8f0; font-weight: 500; line-height: 1.2; }
         .judul-diklat { font-size: 15px; font-weight: 800; color: white; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px; text-transform: uppercase; }
-
         iframe { width: 100%; height: 100%; border: none; background: #000; }
         #progress-bar { height: 4px; background: #22d3ee; width: 0%; transition: width 0.1s linear; position: fixed; top: 0; left: 80px; z-index: 99; }
-        
-        /* Floating Tooltip Custom Trigger */
         .group:hover .tooltip-text { opacity: 1; visibility: visible; transform: translate(0, -50%) scale(1); }
         .list-item-active { background: rgba(34, 211, 238, 0.08) !important; border-color: #22d3ee !important; color: #22d3ee !important; }
     </style>
@@ -90,237 +80,11 @@
         <div class="bg-slate-900 p-8 rounded-2xl w-full max-w-lg border border-slate-700 text-left">
             <h2 class="text-cyan-400 font-bold mb-4 uppercase tracking-widest text-sm">Enterprise GID System Configuration</h2>
             <div id="admin-inputs" class="space-y-3"></div>
-            <button onclick="saveAdmin()" class="w-full bg-cyan-600 mt-6 p-3 rounded-lg font-bold hover:bg-cyan-500 transition">SAVE &amp; REFRESH SYSTEM</button>
+            <button onclick="saveAdmin()" class="w-full bg-cyan-600 mt-6 p-3 rounded-lg font-bold hover:bg-cyan-500 transition">SAVE & REFRESH SYSTEM</button>
             <button onclick="toggleAdmin()" class="w-full text-slate-500 mt-2 text-sm">CANCEL</button>
         </div>
     </div>
 
-    <script>
-        let currentMenu = 0;
-        let isLooping = false;
-        let progress = 0;
-        let loopTimer;
-        let jadwalData = [];
-        let mediaData = [];
-        let currentJadwalPage = 0;
-        let activeKategoriFilter = "ALL";
-        let searchKeyword = "";
-
-        // Pengaturan Multi-Tab GID Mandiri (v4.6.0 Database Architecture)
-        let config = JSON.parse(localStorage.getItem('boe_v460_cms')) || {
-            links: ["", "57327150", "", "", ""], // [0] ID Spreadsheet, [1] GID Jadwal, [2] GID Video, [3] GID Picture, [4] GID Book
-            durasis: [30, 30, 30, 30]
-        };
-
-        const inputContainer = document.getElementById('admin-inputs');
-        const inputLabels = [
-            "Spreadsheet ID Publikasi Master (2PACX-...)", 
-            "GID Tab JADWAL (e.g. kegiatan_1)", 
-            "GID Tab VIDEO (e.g. Video)", 
-            "GID Tab PICTURE (e.g. picture)", 
-            "GID Tab BOOK (e.g. book)"
-        ];
-        inputLabels.forEach((label, i) => {
-            inputContainer.innerHTML += `<div class="flex flex-col"><label class="text-[10px] text-slate-500 uppercase font-bold mb-1">${label}</label><input id="l-${i}" type="text" value="${config.links[i] || ''}" class="bg-slate-800 border border-slate-700 p-2 rounded text-cyan-400 text-xs font-mono outline-none"></div>`;
-        });
-
-        // PARSER SEL DATA NATIVE
-        const formatCell = (str) => {
-            if (!str || str === '""' || str === '-') return '<span class="text-slate-800">-</span>';
-            let clean = str.trim().replace(/^"|"$/g, '');
-            let parts = clean.split('", "'); 
-            if (parts.length === 1 && clean.includes(';')) parts = clean.split(';'); 
-            return parts.map(p => `<div class="mb-0.5 leading-tight text-slate-200">${p.replace(/"/g, '').trim()}</div>`).join('');
-        };
-
-        const parseIndoDate = (dateStr) => {
-            if(!dateStr) return new Date(0);
-            let parts = dateStr.replace(/"/g, '').trim().split('-');
-            if(parts.length !== 3) return new Date(0);
-            const months = { jan: 0, feb: 1, mar: 2, apr: 3, mei: 4, jun: 5, jul: 6, ags: 7, sep: 8, okt: 9, nov: 10, des: 11 };
-            return new Date(parseInt(parts[2]), months[parts[1].toLowerCase().substring(0,3)] || 0, parseInt(parts[0]));
-        };
-
-        // ENGINE ENGINE 1: DATA CORE JADWAL (TAB 1)
-        async function fetchJadwal() {
-            const id = config.links[0]; const gidJadwal = config.links[1] || "57327150";
-            if(!id) return;
-            try {
-                let url = `https://docs.google.com/spreadsheets/d/e/${id}/pub?gid=${gidJadwal}&single=true&output=csv`;
-                const res = await fetch(url, { cache: "no-store" });
-                const text = await res.text();
-                let rows = text.split('\n').slice(1).map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim())).filter(r => r[2] && r[2].length > 5);
-                
-                // Urutkan Tanggal Descending (Terbaru -> Terlama)
-                rows.sort((a, b) => parseIndoDate(b[3]) - parseIndoDate(a[3]));
-                jadwalData = rows;
-                renderJadwal();
-            } catch (e) { console.error("Jadwal Fetch Failed", e); }
-        }
-
-        // ENGINE ENGINE 2: DATA MULTIMEDIA EXPLORER (TAB 2, 3, 4 BERBASIS GID)
-        async function fetchMedia(targetGid) {
-            const id = config.links[0];
-            if(!id || !targetGid) {
-                document.getElementById('display-container').innerHTML = `<div class="flex items-center justify-center h-full text-slate-600 italic text-sm">ID Master atau GID Tab Menu ini belum dimasukkan di panel ⚙️.</div>`;
-                return;
-            }
-            try {
-                let url = `https://docs.google.com/spreadsheets/d/e/${id}/pub?gid=${targetGid}&single=true&output=csv`;
-                const res = await fetch(url, { cache: "no-store" });
-                const text = await res.text();
-                
-                // Bersihkan baris kode html korup
-                if(text.trim().startsWith("<!DOCTYPE")) throw new Error("Format Publikasi GID salah/belum diset ke Entire Document.");
-                
-                // Ambil susunan kolom Media (ID, Kategori, Judul, URL_Embed)
-                mediaData = text.split('\n').slice(1).map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''))).filter(r => r[2] && r[2].length > 1);
-                renderMediaExplorer();
-            } catch (e) { 
-                console.error(e);
-                document.getElementById('display-container').innerHTML = `<div class="flex items-center justify-center h-full text-red-400 text-xs p-6 bg-slate-950 border border-slate-900 flex-col gap-2"><span>⚠️ ERROR FETCH DATA MULTIMEDIA</span><p class="text-slate-600 font-mono">${e.message}</p></div>`;
-            }
-        }
-
-        // RENDERER: GRID VIEW UTAMA JADWAL
-        function renderJadwal() {
-            const container = document.getElementById('display-container');
-            const pageData = jadwalData.slice(currentJadwalPage * 6, (currentJadwalPage + 1) * 6);
-            let html = `<div class="p-4 h-screen flex flex-col justify-between"><div class="flex justify-between items-center mb-2"><h2 class="text-xl font-black text-cyan-500 italic uppercase">Jadwal Progli 50</h2></div><div class="grid grid-cols-3 grid-rows-2 gap-3 flex-1 h-[calc(100vh-80px)]">`;
-            pageData.forEach(row => {
-                html += `
-                <div class="jadwal-card">
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="px-2 py-0.5 bg-cyan-900/40 text-cyan-400 rounded text-[9px] font-bold uppercase border border-cyan-500/10">${row[0]}</span>
-                            <span class="text-slate-600 text-[9px] font-bold uppercase">Angkatan ${row[1]}</span>
-                        </div>
-                        <h3 class="judul-diklat mb-1.5 border-b border-slate-800 pb-1.5">${row[2]}</h3>
-                        <div class="flex justify-center space-x-2 text-[10px] font-mono text-cyan-300 mb-1.5 bg-slate-900/50 p-1 rounded border border-slate-800">
-                            <span>${row[3]}</span> <span class="text-slate-700">|</span> <span>${row[4]}</span>
-                        </div>
-                    </div>
-                    <div class="info-grid">
-                        <div class="info-box"><p class="label-mini">Pengajar</p><div class="val-mini">${formatCell(row[5])}</div></div>
-                        <div class="info-box"><p class="label-mini">Asessor</p><div class="val-mini">${formatCell(row[6])}</div></div>
-                        <div class="info-box"><p class="label-mini">Teknisi</p><div class="val-mini">${formatCell(row[7])}</div></div>
-                        <div class="info-box"><p class="label-mini">LMS / Content</p><div class="val-mini">${formatCell(row[8])}</div></div>
-                    </div>
-                </div>`;
-            });
-            container.innerHTML = html + `</div></div>`;
-        }
-
-        // RENDERER: SPLIT EXPLORER UTAMA KATEGORI
-        function renderMediaExplorer() {
-            const container = document.getElementById('display-container');
-            const systemNames = ["", "", "Streaming Video", "Galeri & Infografis", "E-Book Pustaka"];
-            const currentTitle = systemNames[currentMenu];
-
-            let filteredItems = [...mediaData];
-            let kategoriSet = new Set(["ALL"]);
-            filteredItems.forEach(item => { if(item[1]) kategoriSet.add(item[1].trim()); });
-            
-            if (activeKategoriFilter !== "ALL") {
-                filteredItems = filteredItems.filter(item => item[1] === activeKategoriFilter);
-            }
-            if (searchKeyword !== "") {
-                filteredItems = filteredItems.filter(item => item[2].toLowerCase().includes(searchKeyword.toLowerCase()));
-            }
-
-            let html = `
-            <div class="media-layout">
-                <div class="media-sidebar">
-                    <h2 class="text-xs font-black uppercase tracking-widest text-cyan-500 italic mb-1">${currentTitle}</h2>
-                    
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[9px] font-bold text-slate-500 uppercase">Kelompok Kategori</label>
-                        <select onchange="filterMediaKategori(this.value)" class="bg-slate-900 border border-slate-800 p-2 rounded text-xs outline-none text-slate-300 cursor-pointer">
-                            ${Array.from(kategoriSet).map(k => `<option value="${k}" ${activeKategoriFilter === k ? 'selected' : ''}>${k}</option>`).join('')}
-                        </select>
-                    </div>
-
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[9px] font-bold text-slate-500 uppercase">Cari Judul File</label>
-                        <input type="text" oninput="searchMediaJudul(this.value)" value="${searchKeyword}" placeholder="Ketik kata kunci..." class="bg-slate-900 border border-slate-800 p-2 rounded text-xs outline-none text-cyan-400 placeholder-slate-700">
-                    </div>
-
-                    <div class="border-b border-slate-800 my-1"></div>
-
-                    <div class="flex-1 overflow-y-auto space-y-1.5 pr-1">
-                        ${filteredItems.map((item, idx) => `
-                            <div onclick="playMedia('${item[3]}', '${item[0]}')" id="media-item-${item[0]}" class="p-2.5 bg-slate-900/40 border border-slate-800 rounded-lg cursor-pointer hover:bg-slate-900 transition text-left group">
-                                <p class="text-[9px] font-bold text-slate-600 uppercase mb-0.5 tracking-tight">${item[1]} • ${item[0]}</p>
-                                <p class="text-xs font-semibold text-slate-300 leading-tight group-hover:text-cyan-400 transition truncate">${item[2]}</p>
-                            </div>
-                        `).join('')}
-                        ${filteredItems.length === 0 ? '<p class="text-center text-xs text-slate-700 italic pt-10">Berkas tidak ditemukan</p>' : ''}
-                    </div>
-                </div>
-
-                <div class="media-viewer" id="media-iframe-viewport">
-                    <div class="flex items-center justify-center h-full text-slate-800 text-sm font-medium italic">
-                        <span>Pilih item di sebelah kiri untuk menayangkan konten</span>
-                    </div>
-                </div>
-            </div>`;
-            
-            container.innerHTML = html;
-            if(filteredItems.length > 0) playMedia(filteredItems[0][3], filteredItems[0][0]);
-        }
-
-        function playMedia(url, id) {
-            const viewport = document.getElementById('media-iframe-viewport');
-            document.querySelectorAll('[id^="media-item-"]').forEach(el => el.classList.remove('list-item-active'));
-            const activeItem = document.getElementById(`media-item-${id}`);
-            if(activeItem) activeItem.classList.add('list-item-active');
-            viewport.innerHTML = url ? `<iframe src="${url}"></iframe>` : `<div class="text-center text-slate-700 italic text-xs pt-20">Tautan media kosong/rusak.</div>`;
-        }
-
-        function filterMediaKategori(val) { activeKategoriFilter = val; renderMediaExplorer(); }
-        function searchMediaJudul(val) { searchKeyword = val; renderMediaExplorer(); }
-
-        // ALUR KENDALI MENU UTAMA
-        function changeMenu(index) {
-            currentMenu = index;
-            activeKategoriFilter = "ALL"; searchKeyword = "";
-            document.querySelectorAll('.sidebar-icon').forEach(el => el.classList.remove('active'));
-            document.getElementById(`nav-${index}`).classList.add('active');
-            
-            if(index === 1) fetchJadwal();
-            else if(index === 0) document.getElementById('display-container').innerHTML = `<div class="flex items-center justify-center h-full flex-col text-center uppercase"><h1 class="text-7xl font-black italic tracking-tighter">DEPARTEMEN <span class="text-cyan-500">LISTRIK</span></h1><p class="text-slate-600 text-xs tracking-[0.6em] mt-3 font-mono">BBPPMPV BOE MALANG SIGNAGE SYSTEM</p></div>`;
-            else if(index === 2) fetchMedia(config.links[2]); // GID Video
-            else if(index === 3) fetchMedia(config.links[3]); // GID Picture
-            else if(index === 4) fetchMedia(config.links[4]); // GID Book
-        }
-
-        function handleAction(type) {
-            if(currentMenu === 1 && jadwalData.length > 0) {
-                const max = Math.ceil(jadwalData.length / 6);
-                currentJadwalPage = type === 'next' ? (currentJadwalPage + 1) % max : (currentJadwalPage - 1 + max) % max;
-                renderJadwal();
-            }
-        }
-
-        function toggleLoop() {
-            isLooping = !isLooping;
-            document.getElementById('loopBtn').innerHTML = isLooping ? "⏸️" : "▶️";
-            if(isLooping) loopTimer = setInterval(() => {
-                progress += (100 / (30 * 10));
-                document.getElementById('progress-bar').style.width = progress + '%';
-                if(progress >= 100) { progress = 0; handleAction('next'); }
-            }, 100);
-            else clearInterval(loopTimer);
-        }
-
-        function toggleAdmin() { document.getElementById('adminModal').classList.toggle('hidden'); document.getElementById('adminModal').classList.toggle('flex'); }
-        function saveAdmin() {
-            for(let i=0; i<5; i++) config.links[i] = document.getElementById(`l-${i}`).value.trim();
-            localStorage.setItem('boe_v460_cms', JSON.stringify(config));
-            location.reload();
-        }
-
-        window.onload = () => changeMenu(0);
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
