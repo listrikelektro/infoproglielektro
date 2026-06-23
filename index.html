@@ -15,9 +15,27 @@
         .media-layout { display: flex; height: 100vh; width: 100%; }
         .media-sidebar { width: 320px; background: #090d16; border-right: 1px solid #1e293b; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
         .media-viewer { flex: 1; background: #000; position: relative; }
-        .jadwal-card { background: linear-gradient(145deg, #0f172a, #020617); border: 1px solid #1e293b; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
-        .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 4px; margin-top: 2px; }
-        .info-box { background: rgba(30, 41, 59, 0.25); padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(51, 65, 85, 0.3); max-height: 58px; overflow-y: auto; }
+        .jadwal-card { background: linear-gradient(145deg, #0f172a, #020617); border: 1px solid #1e293b; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; height: 100%; justify-content: flex-start; /* TRIK: Mengubah dari space-between agar semua elemen mampat ke atas */
+    gap: 10px; /* TRIK: Mengunci jarak antar komponen agar rapat dan konsisten */
+}
+       .info-grid { 
+    display: grid; 
+    grid-template-cols: 1fr 1fr; 
+    gap: 6px; 
+    flex-grow: 1; /* TRIK: Memaksa grid pengajar memanfaatkan sisa ruang bawah secara otomatis */
+}
+
+.info-box { 
+    background: rgba(30, 41, 59, 0.25); 
+    padding: 8px 10px; 
+    border-radius: 8px; 
+    border: 1px solid rgba(51, 65, 85, 0.3); 
+    height: 100%; /* Membuat tinggi kotak mengikuti elastisitas grid */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+}
         .info-box::-webkit-scrollbar { width: 3px; }
         .info-box::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
         .label-mini { font-size: 9px; color: #475569; font-weight: 800; text-transform: uppercase; margin-bottom: 1px; }
