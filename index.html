@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOE Enterprise Signage - v4.4.0 Production</title>
+    <title>BOE Enterprise Signage - v4.5.0 Production</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -15,23 +15,36 @@
         .nav-btn { background: #1e293b; border-radius: 10px; padding: 10px; border: 1px solid #334155; color: #94a3b8; transition: 0.2s; }
         .nav-btn:hover { background: #334155; color: #22d3ee; border-color: #22d3ee; }
         
-        /* Card Layout Jadwal */
+        /* Card Layout Jadwal Anti-Overlapping */
         .jadwal-card { 
             background: linear-gradient(145deg, #0f172a, #020617); 
-            border: 1px solid #1e293b; border-radius: 12px; padding: 12px;
-            display: flex; flex-direction: column; height: 100%;
+            border: 1px solid #1e293b; border-radius: 12px; padding: 10px;
+            display: flex; flex-direction: column; height: 100%; justify-content: space-between;
         }
-        .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 6px; margin-top: 4px; flex-grow: 1; }
-        .info-box { background: rgba(30, 41, 59, 0.25); padding: 8px; border-radius: 8px; border: 1px solid rgba(51, 65, 85, 0.3); }
+        .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 4px; margin-top: 2px; }
         
-        .label-mini { font-size: 10px; color: #475569; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
-        .val-mini { font-size: 14px; color: #e2e8f0; font-weight: 500; line-height: 1.2; }
+        /* Box Nama dengan Batasan Tinggi Maksimal (Scrollable jika terlalu panjang) */
+        .info-box { 
+            background: rgba(30, 41, 59, 0.25); 
+            padding: 6px 8px; 
+            border-radius: 6px; 
+            border: 1px solid rgba(51, 65, 85, 0.3);
+            max-height: 58px;
+            overflow-y: auto;
+        }
+        
+        /* Hilangkan scrollbar bawaan browser agar tetap estetik */
+        .info-box::-webkit-scrollbar { width: 3px; }
+        .info-box::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        
+        .label-mini { font-size: 9px; color: #475569; font-weight: 800; text-transform: uppercase; margin-bottom: 1px; }
+        .val-mini { font-size: 12px; color: #e2e8f0; font-weight: 500; line-height: 1.2; }
         
         /* Judul Diklat Modern (Maksimal 2 Baris) */
         .judul-diklat {
-            font-size: 18px; font-weight: 800; color: white; line-height: 1.2;
+            font-size: 15px; font-weight: 800; color: white; line-height: 1.2;
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-            overflow: hidden; min-height: 44px; text-transform: uppercase;
+            overflow: hidden; min-height: 36px; text-transform: uppercase;
         }
 
         iframe { width: 100%; height: 100vh; border: none; }
@@ -45,29 +58,35 @@
 
     <div id="progress-bar"></div>
 
+    <!-- SIDEBAR NAVIGATION -->
     <nav class="w-20 h-screen bg-slate-950 flex flex-col items-center py-6 space-y-6 border-r border-slate-900 z-50">
         <div class="text-cyan-500 font-black text-xl italic mb-4 tracking-tighter">BOE</div>
         
+        <!-- MENU 0: HOME -->
         <div class="relative group">
             <button onclick="changeMenu(0)" class="sidebar-icon text-2xl p-2 rounded-xl" id="nav-0">🏠</button>
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Halaman Utama</span>
         </div>
 
+        <!-- MENU 1: JADWAL -->
         <div class="relative group">
             <button onclick="changeMenu(1)" class="sidebar-icon text-2xl p-2 rounded-xl" id="nav-1">📅</button>
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Jadwal Diklat Progli</span>
         </div>
 
+        <!-- MENU 2: VIDEO -->
         <div class="relative group">
             <button onclick="changeMenu(2)" class="sidebar-icon text-2xl p-2 rounded-xl" id="nav-2">📺</button>
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Streaming Video Player</span>
         </div>
 
+        <!-- MENU 3: GALERI -->
         <div class="relative group">
             <button onclick="changeMenu(3)" class="sidebar-icon text-2xl p-2 rounded-xl" id="nav-3">🖼️</button>
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Infografis & Galeri</span>
         </div>
 
+        <!-- MENU 4: FLIPBOOK -->
         <div class="relative group">
             <button onclick="changeMenu(4)" class="sidebar-icon text-2xl p-2 rounded-xl" id="nav-4">📖</button>
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">E-Book / Info Flipbook</span>
@@ -75,6 +94,7 @@
 
         <div class="flex-grow"></div>
         
+        <!-- MANUAL NAVIGATOR -->
         <div class="flex flex-col space-y-3 mb-2">
             <div class="relative group">
                 <button onclick="handleAction('prev')" class="nav-btn text-xl">⏪</button>
@@ -86,21 +106,25 @@
             </div>
         </div>
 
+        <!-- PLAY/LOOP CONTROL -->
         <div class="relative group">
             <button onclick="toggleLoop()" id="loopBtn" class="nav-btn text-xl">▶️</button>
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Mulai Auto-Rotation (Slide)</span>
         </div>
 
+        <!-- SETTINGS SYSTEM -->
         <div class="relative group">
             <button onclick="toggleAdmin()" class="sidebar-icon text-xl opacity-20 p-2">⚙️</button>
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Konfigurasi Enterprise</span>
         </div>
     </nav>
 
+    <!-- MAIN VIEWPORT DISPLAY -->
     <main class="flex-1 h-screen relative bg-[#020617]" id="main-display">
         <div id="display-container" class="w-full h-full"></div>
     </main>
 
+    <!-- ADMIN SETTINGS CONFIG MODAL -->
     <div id="adminModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[100]">
         <div class="bg-slate-900 p-8 rounded-2xl w-full max-w-lg border border-slate-700 text-left">
             <h2 class="text-cyan-400 font-bold mb-4 uppercase tracking-widest text-sm">Enterprise System Configuration</h2>
@@ -118,8 +142,7 @@
         let jadwalData = [];
         let currentJadwalPage = 0;
 
-        // Inisialisasi Database Lokal Browser (v4.4.0)
-        let config = JSON.parse(localStorage.getItem('boe_v440')) || {
+        let config = JSON.parse(localStorage.getItem('boe_v450')) || {
             links: ["", "", "", ""],
             durasis: [30, 30, 30, 30]
         };
@@ -129,97 +152,82 @@
             inputContainer.innerHTML += `<div class="flex flex-col"><label class="text-[10px] text-slate-500 uppercase font-bold mb-1">${label}</label><input id="l-${i}" type="text" value="${config.links[i]}" class="bg-slate-800 border border-slate-700 p-2 rounded text-cyan-400 text-xs font-mono outline-none"></div>`;
         });
 
-        // PARSER NATIVE MULTI-SELECT: Mengubah ", " Menjadi Enter Vertikal
         const formatCell = (str) => {
-            if (!str || str === '""' || str === '-') return '<span class="text-slate-800">-</span>';
+            if (!str || str === '""' || str === '-') return '<span class="text-slate-700">-</span>';
             let clean = str.trim();
             if (clean.startsWith('"')) clean = clean.substring(1);
             if (clean.endsWith('"')) clean = clean.substring(0, clean.length - 1);
 
-            // Deteksi pemisah native Google Sheets multi-select (tanda kutip koma spasi tanda kutip)
             let parts = clean.split('", "'); 
-            
-            // Backup jika user menulis pemisah titik koma manual
             if (parts.length === 1 && clean.includes(';')) parts = clean.split(';'); 
 
             return parts.map(p => {
                 let name = p.replace(/"/g, '').trim(); 
-                return `<div class="mb-1 leading-tight text-slate-200">${name}</div>`;
+                return `<div class="mb-0.5 leading-tight">${name}</div>`;
             }).join('');
         };
 
-        // ENGINE: Sinkronisasi Data Google Sheets Aman (Anti-CORS / Anti-Blank)
+        // HELPER SAKTI: Mengubah string tanggal lokal "19-Jan-2026" menjadi objek Date internal untuk disorting
+        const parseIndoDate = (dateStr) => {
+            if(!dateStr) return new Date(0);
+            let cleanStr = dateStr.replace(/"/g, '').trim();
+            let parts = cleanStr.split('-');
+            if(parts.length !== 3) return new Date(0);
+            
+            const months = {
+                jan: 0, feb: 1, mar: 2, apr: 3, mei: 4, jun: 5,
+                jul: 6, ags: 7, sep: 8, okt: 9, nov: 10, des: 11
+            };
+            let day = parseInt(parts[0]);
+            let month = months[parts[1].toLowerCase().substring(0,3)] || 0;
+            let year = parseInt(parts[2]);
+            return new Date(year, month, day);
+        };
+
         async function fetchJadwal() {
             const id = config.links[0];
-            if(!id) {
-                document.getElementById('display-container').innerHTML = `<div class="flex items-center justify-center h-full text-slate-600 italic text-sm">ID Spreadsheet belum dimasukkan. Silakan klik ikon ⚙️ di pojok kiri bawah.</div>`;
-                return;
-            }
+            if(!id) return;
             try {
-                let url = "";
-                // JIKA MENGGUNAKAN PUBLISH ID (Format 2PACX-...)
-                if (id.startsWith("2PACX-")) {
-                    url = `https://docs.google.com/spreadsheets/d/e/${id}/pub?gid=57327150&single=true&output=csv`;
-                } else {
-                    // JIKA MENGGUNAKAN ID EDIT STANDARD
-                    url = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=57327150`;
-                }
+                let url = id.startsWith("2PACX-") 
+                    ? `https://docs.google.com/spreadsheets/d/e/${id}/pub?gid=57327150&single=true&output=csv`
+                    : `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=57327150`;
 
-                // Ambil data murni menggunakan cache-busting agar selalu real-time
                 const res = await fetch(url, { cache: "no-store" });
-                if (!res.ok) throw new Error("Gagal mengambil data dari server Google.");
-                
+                if (!res.ok) throw new Error("Gagal sync.");
                 const text = await res.text();
                 
-                // Proteksi dari data halaman login palsu berbentuk HTML
-                if(text.trim().startsWith("<!DOCTYPE") || text.includes("script")) {
-                    throw new Error("Data terdeteksi rusak (Format HTML corrupt).");
-                }
-
-                // Eksekusi pemisah baris CSV standard
-                jadwalData = text.split('\n').slice(1).map(r => 
+                let rows = text.split('\n').slice(1).map(r => 
                     r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim())
                 ).filter(r => r[2] && r[2].length > 5);
-                
+
+                // ENGINE ENGINE SHORTING DESENDING (Terbaru -> Terlama)
+                rows.sort((a, b) => {
+                    return parseIndoDate(b[3]) - parseIndoDate(a[3]);
+                });
+
+                jadwalData = rows;
                 renderJadwal();
-            } catch (e) { 
-                console.error("Sync Failure:", e); 
-                document.getElementById('display-container').innerHTML = `
-                    <div class="flex items-center justify-center h-full flex-col text-center p-6">
-                        <p class="text-red-400 font-bold text-sm mb-1">⚠️ SINKRONISASI DATA GAGAL</p>
-                        <p class="text-slate-500 text-[11px] font-mono bg-slate-950 p-3 rounded border border-slate-900 max-w-md">${e.message}</p>
-                        <p class="text-slate-600 text-[10px] mt-3">Silakan periksa kembali ketepatan ID Kunci di menu ⚙️</p>
-                    </div>`;
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // RENDERER: Tampilan 6 Kartu Jadwal
         function renderJadwal() {
             const container = document.getElementById('display-container');
-            if(jadwalData.length === 0) {
-                container.innerHTML = `<div class="flex items-center justify-center h-full text-slate-600 italic">Tidak ada jadwal aktif ditemukan.</div>`;
-                return;
-            }
-            
             const pageData = jadwalData.slice(currentJadwalPage * 6, (currentJadwalPage + 1) * 6);
-            let html = `<div class="p-6 h-screen flex flex-col"><h2 class="text-2xl font-black text-cyan-500 italic mb-4 uppercase tracking-tight">Jadwal Progli 50</h2><div class="grid grid-cols-3 grid-rows-2 gap-4 flex-1">`;
+
+            let html = `<div class="p-4 h-screen flex flex-col justify-between"><div class="flex justify-between items-center mb-2"><h2 class="text-xl font-black text-cyan-500 italic uppercase">Jadwal Progli 50</h2></div><div class="grid grid-cols-3 grid-rows-2 gap-3 flex-1 h-[calc(100vh-80px)]">`;
             
             pageData.forEach(row => {
-                const judulClean = row[2] ? row[2].replace(/"/g, '').trim() : '-';
-                const kodeProg = row[0] ? row[0].replace(/"/g,'') : '-';
-                const angkatan = row[1] ? row[1].replace(/"/g,'') : '-';
-                const tglMulai = row[3] ? row[3].replace(/"/g,'') : '-';
-                const tglSelesai = row[4] ? row[4].replace(/"/g,'') : '-';
-
                 html += `
                 <div class="jadwal-card">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="px-2 py-0.5 bg-cyan-900/40 text-cyan-400 rounded text-[10px] font-bold uppercase tracking-wide border border-cyan-500/10">${kodeProg}</span>
-                        <span class="text-slate-600 text-[10px] font-bold uppercase">Angkatan ${angkatan}</span>
-                    </div>
-                    <h3 class="judul-diklat mb-2 border-b border-slate-800/60 pb-2">${judulClean}</h3>
-                    <div class="flex justify-center space-x-2 text-[11px] font-mono text-cyan-300 mb-3 bg-slate-900/50 p-1.5 rounded border border-slate-800/40">
-                        <span>${tglMulai}</span> <span class="text-slate-700">|</span> <span>${tglSelesai}</span>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="px-2 py-0.5 bg-cyan-900/40 text-cyan-400 rounded text-[9px] font-bold uppercase border border-cyan-500/10">${row[0].replace(/"/g,'')}</span>
+                            <span class="text-slate-600 text-[9px] font-bold uppercase">Angkatan ${row[1].replace(/"/g,'')}</span>
+                        </div>
+                        <h3 class="judul-diklat mb-1.5 border-b border-slate-800 pb-1.5">${row[2].replace(/"/g,'')}</h3>
+                        <div class="flex justify-center space-x-2 text-[10px] font-mono text-cyan-300 mb-1.5 bg-slate-900/50 p-1 rounded border border-slate-800">
+                            <span>${row[3].replace(/"/g,'')}</span> <span class="text-slate-700">|</span> <span>${row[4].replace(/"/g,'')}</span>
+                        </div>
                     </div>
                     <div class="info-grid">
                         <div class="info-box"><p class="label-mini">Pengajar</p><div class="val-mini">${formatCell(row[5])}</div></div>
@@ -232,24 +240,15 @@
             container.innerHTML = html + `</div></div>`;
         }
 
-        // LIFESTYLE: Navigasi Menu Samping
         function changeMenu(index) {
             currentMenu = index;
             document.querySelectorAll('.sidebar-icon').forEach(el => el.classList.remove('active'));
             document.getElementById(`nav-${index}`).classList.add('active');
-            
-            const display = document.getElementById('display-container');
-            if(index === 1) {
-                fetchJadwal();
-            } else if(index === 0) {
-                display.innerHTML = `<div class="flex items-center justify-center h-full flex-col text-center uppercase"><h1 class="text-7xl font-black italic tracking-tighter">DEPARTEMEN <span class="text-cyan-500">LISTRIK</span></h1><p class="text-slate-600 text-xs tracking-[0.6em] mt-3 font-mono">BBPPMPV BOE MALANG SIGNAGE SYSTEM</p></div>`;
-            } else {
-                let url = config.links[index-1];
-                display.innerHTML = url ? `<iframe src="${url}"></iframe>` : `<div class="flex items-center justify-center h-full text-slate-700 italic text-sm">Link menu ini belum dikonfigurasi pada tombol ⚙️.</div>`;
-            }
+            if(index === 1) fetchJadwal();
+            else if(index === 0) document.getElementById('display-container').innerHTML = `<div class="flex items-center justify-center h-full flex-col text-center uppercase"><h1 class="text-7xl font-black italic tracking-tighter">DEPARTEMEN <span class="text-cyan-500">LISTRIK</span></h1><p class="text-slate-600 text-xs tracking-[0.6em] mt-3 font-mono">BBPPMPV BOE MALANG SIGNAGE SYSTEM</p></div>`;
+            else document.getElementById('display-container').innerHTML = `<iframe src="${config.links[index-1]}"></iframe>`;
         }
 
-        // CONTROL: Aksi Pemutaran Halaman
         function handleAction(type) {
             if(currentMenu === 1 && jadwalData.length > 0) {
                 const max = Math.ceil(jadwalData.length / 6);
@@ -258,38 +257,24 @@
             }
         }
 
-        // AUTO ROTATION: Loop System Control
         function toggleLoop() {
             isLooping = !isLooping;
-            const btn = document.getElementById('loopBtn');
-            btn.innerHTML = isLooping ? "⏸️" : "▶️";
-            btn.classList.toggle('bg-cyan-950', isLooping);
-            
-            if(isLooping) {
-                loopTimer = setInterval(() => {
-                    progress += (100 / (30 * 10)); // Default putaran 30 Detik per Layar
-                    document.getElementById('progress-bar').style.width = progress + '%';
-                    if(progress >= 100) { 
-                        progress = 0; 
-                        handleAction('next'); 
-                    }
-                }, 100);
-            } else {
-                clearInterval(loopTimer);
-                document.getElementById('progress-bar').style.width = '0%';
-                progress = 0;
-            }
+            document.getElementById('loopBtn').innerHTML = isLooping ? "⏸️" : "▶️";
+            if(isLooping) loopTimer = setInterval(() => {
+                progress += (100 / (30 * 10));
+                document.getElementById('progress-bar').style.width = progress + '%';
+                if(progress >= 100) { progress = 0; handleAction('next'); }
+            }, 100);
+            else clearInterval(loopTimer);
         }
 
-        // MANAGEMENT CONTEXT
         function toggleAdmin() { document.getElementById('adminModal').classList.toggle('hidden'); document.getElementById('adminModal').classList.toggle('flex'); }
         function saveAdmin() {
             for(let i=0; i<4; i++) config.links[i] = document.getElementById(`l-${i}`).value.trim();
-            localStorage.setItem('boe_v440', JSON.stringify(config));
+            localStorage.setItem('boe_v450', JSON.stringify(config));
             location.reload();
         }
 
-        // Bootstrapping System On Load
         window.onload = () => changeMenu(0);
     </script>
 </body>
