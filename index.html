@@ -33,6 +33,7 @@
 
     <div id="progress-bar"></div>
 
+    <!-- SIDEBAR MAIN NAVIGATION -->
     <nav class="w-20 h-screen bg-slate-950 flex flex-col items-center py-6 space-y-6 border-r border-slate-900 z-50">
         <div class="text-cyan-500 font-black text-xl italic mb-4 tracking-tighter">BOE</div>
         
@@ -61,6 +62,12 @@
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Modul Buku Digital</span>
         </div>
 
+        <!-- 🎮 MENU BARU: INTERAKTIF (INDEX 5) -->
+        <div class="relative group">
+            <button onclick="changeMenu(5)" class="sidebar-icon text-2xl p-2 rounded-xl" id="nav-5">🎮</button>
+            <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Konten Interaktif Lumi</span>
+        </div>
+
         <div class="flex-grow"></div>
         
         <div class="flex flex-col space-y-3 mb-2">
@@ -72,10 +79,12 @@
         <button onclick="toggleAdmin()" class="sidebar-icon text-xl opacity-20 p-2">⚙️</button>
     </nav>
 
+    <!-- MAIN VIEWPORT DISPLAY -->
     <main class="flex-1 h-screen relative bg-[#020617]" id="main-display">
         <div id="display-container" class="w-full h-full"></div>
     </main>
 
+    <!-- ADMIN SYSTEM CONFIG MODAL -->
     <div id="adminModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[100]">
         <div class="bg-slate-900 p-8 rounded-2xl w-full max-w-lg border border-slate-700 text-left">
             <h2 class="text-cyan-400 font-bold mb-4 uppercase tracking-widest text-sm">Enterprise GID System Configuration</h2>
