@@ -3,32 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOE Enterprise - v4.3.0 Final Fix</title>
+    <title>BOE Signage - v3.9.4 Final Polish</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background: #020617; color: white; margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
         .sidebar-icon { cursor: pointer; transition: 0.3s; opacity: 0.5; color: #94a3b8; }
-        .sidebar-icon:hover, .active { opacity: 1; color: #22d3ee; transform: scale(1.1); }
-        .nav-btn { background: #1e293b; border-radius: 10px; padding: 10px; border: 1px solid #334155; color: #94a3b8; }
+        .sidebar-icon:hover, .active { opacity: 1; transform: scale(1.1); color: #22d3ee; }
+        .nav-btn { background: #1e293b; border-radius: 10px; padding: 10px; border: 1px solid #334155; color: #94a3b8; transition: 0.2s; }
+        .nav-btn:hover { background: #334155; color: #22d3ee; border-color: #22d3ee; }
         
         .jadwal-card { 
             background: linear-gradient(145deg, #0f172a, #020617); 
-            border: 1px solid #1e293b; border-radius: 12px; padding: 12px;
+            border: 1px solid #1e293b; 
+            border-radius: 12px; 
+            padding: 10px;
             display: flex; flex-direction: column; height: 100%;
         }
-        .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 6px; margin-top: 4px; flex-grow: 1; }
-        .info-box { background: rgba(30, 41, 59, 0.25); padding: 8px; border-radius: 8px; border: 1px solid rgba(51, 65, 85, 0.3); }
-        
-        .label-mini { font-size: 10px; color: #475569; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
-        .val-mini { font-size: 14px; color: #e2e8f0; font-weight: 500; line-height: 1.2; }
-        
-        /* Judul 2 Baris Power */
-        .judul-diklat {
-            font-size: 18px; font-weight: 800; color: white; line-height: 1.2;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-            overflow: hidden; min-height: 44px; text-transform: uppercase;
+        .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 4px; margin-top: 2px; }
+        .info-box { 
+            background: rgba(30, 41, 59, 0.2); 
+            padding: 5px 8px; 
+            border-radius: 6px; 
+            border: 1px solid rgba(51, 65, 85, 0.3); 
+            display: flex; flex-direction: column;
         }
-
+        
+        /* Font Besar (v3.9 Standard) */
+        .label-mini { font-size: 10px; color: #475569; font-weight: 800; text-transform: uppercase; margin-bottom: 1px; }
+        .val-mini { font-size: 14px; color: #e2e8f0; font-weight: 500; line-height: 1.3; }
+        
         iframe { width: 100%; height: 100vh; border: none; }
         #progress-bar { height: 4px; background: #22d3ee; width: 0%; transition: width 0.1s linear; position: fixed; top: 0; left: 80px; z-index: 99; }
     </style>
@@ -58,10 +61,10 @@
     </main>
 
     <div id="adminModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[100]">
-        <div class="bg-slate-900 p-8 rounded-2xl w-full max-w-lg border border-slate-700 text-left">
-            <h2 class="text-cyan-400 font-bold mb-4 uppercase tracking-widest">Enterprise Config</h2>
+        <div class="bg-slate-900 p-8 rounded-2xl w-full max-w-lg border border-slate-700">
+            <h2 class="text-cyan-400 font-bold mb-4 uppercase tracking-widest">Settings Panel</h2>
             <div id="admin-inputs" class="space-y-3"></div>
-            <button onclick="saveAdmin()" class="w-full bg-cyan-600 mt-6 p-3 rounded-lg font-bold">SAVE & REFRESH</button>
+            <button onclick="saveAdmin()" class="w-full bg-cyan-600 mt-6 p-3 rounded-lg font-bold">SAVE CONFIG</button>
             <button onclick="toggleAdmin()" class="w-full text-slate-500 mt-2">CANCEL</button>
         </div>
     </div>
@@ -74,109 +77,142 @@
         let jadwalData = [];
         let currentJadwalPage = 0;
 
-        let config = JSON.parse(localStorage.getItem('boe_v430')) || {
+        let config = JSON.parse(localStorage.getItem('boe_v394')) || {
             links: ["", "", "", ""],
             durasis: [30, 30, 30, 30]
         };
 
         const inputContainer = document.getElementById('admin-inputs');
-        ["Spreadsheet ID", "Video Embed URL", "Gallery Link", "Flipbook Link"].forEach((label, i) => {
-            inputContainer.innerHTML += `<div class="flex flex-col"><label class="text-[10px] text-slate-500 uppercase">${label}</label><input id="l-${i}" type="text" value="${config.links[i]}" class="bg-slate-800 border border-slate-700 p-2 rounded text-cyan-400 text-xs outline-none"></div>`;
+        ["ID Spreadsheet", "Link Video", "Link Infografis", "Link Flipbook"].forEach((label, i) => {
+            inputContainer.innerHTML += `<div class="flex flex-col"><label class="text-[10px] text-slate-500 uppercase">${label}</label><input id="l-${i}" type="text" value="${config.links[i]}" class="bg-slate-800 border border-slate-700 p-2 rounded text-cyan-400 outline-none font-mono text-xs"></div>`;
         });
 
-        // FUNGSI FORMULA NATIVE DROP DOWN (The Fix)
+        // Pembersihan Data & Deteksi Pemisah Orang (TANDA TITIK KOMA)
         const formatCell = (str) => {
-            if (!str || str === '""' || str === '-') return '<span class="text-slate-800">-</span>';
-            let clean = str.trim();
-            if (clean.startsWith('"')) clean = clean.substring(1);
-            if (clean.endsWith('"')) clean = clean.substring(0, clean.length - 1);
+            if (!str || str === '""' || str === '-') return '-';
+            let clean = str.replace(/"/g, '').trim();
+            clean = clean.replace(/,+$/, ''); // Hapus koma di ujung akhir
 
-            let parts = clean.split('", "'); // Deteksi pemisah native Google
-            if (parts.length === 1 && clean.includes(';')) parts = clean.split(';'); // Backup titik koma manual
-
-            return parts.map(p => {
-                let name = p.replace(/"/g, '').trim(); 
-                return `<div class="mb-1 leading-tight">${name}</div>`;
-            }).join('');
+            if (clean.includes(';')) {
+                return clean.split(';').map(s => s.trim()).join('<br>');
+            }
+            return clean;
         };
 
-        async function fetchJadwal() {
+        function changeMenu(index) {
+            currentMenu = index;
+            document.querySelectorAll('.sidebar-icon').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-${index}`).classList.add('active');
+            renderContent();
+        }
+
+        async function fetchJadwalData() {
             const id = config.links[0];
             if(!id) return;
             try {
                 const res = await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=Sheet1`);
                 const text = await res.text();
-                jadwalData = text.split('\n').slice(1).map(r => 
+                const rows = text.split('\n').slice(1).map(r => 
                     r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim())
-                ).filter(r => r[2] && r[2].length > 5);
-                renderJadwal();
-            } catch (e) { console.error("Sync Failed"); }
+                );
+                jadwalData = rows.filter(r => r[2] && r[2].length > 5);
+            } catch (e) { console.error("Sync Error"); }
         }
 
-        function renderJadwal() {
+        function renderJadwalPage() {
             const container = document.getElementById('display-container');
-            const pageData = jadwalData.slice(currentJadwalPage * 6, (currentJadwalPage + 1) * 6);
+            const itemsPerPage = 6;
+            const start = currentJadwalPage * itemsPerPage;
+            const pageData = jadwalData.slice(start, start + itemsPerPage);
 
-            let html = `<div class="p-6 h-screen flex flex-col"><h2 class="text-2xl font-black text-cyan-500 italic mb-4 uppercase">Jadwal Progli 50</h2><div class="grid grid-cols-3 grid-rows-2 gap-4 flex-1">`;
+            let html = `
+            <div class="p-4 h-screen flex flex-col">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xl font-black uppercase text-cyan-500 italic">Jadwal Progli 50</h2>
+                </div>
+                <div class="grid grid-cols-3 grid-rows-2 gap-3 flex-1">`;
             
             pageData.forEach(row => {
+                // Judul Diklat - Bersihkan Petik
+                const judulClean = row[2].replace(/"/g, '').trim();
+
                 html += `
                 <div class="jadwal-card">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="px-2 py-0.5 bg-cyan-900/40 text-cyan-400 rounded text-[10px] font-bold uppercase">${row[0].replace(/"/g,'')}</span>
-                        <span class="text-slate-600 text-[10px] font-bold uppercase">Angkatan ${row[1]}</span>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="px-2 py-0.5 bg-cyan-900/40 text-cyan-400 rounded text-[10px] font-bold uppercase">${formatCell(row[0])}</span>
+                        <span class="text-slate-600 text-[10px] font-bold">ANGKATAN ${row[1]}</span>
                     </div>
-                    <h3 class="judul-diklat mb-2 border-b border-slate-800 pb-2">${row[2].replace(/"/g,'')}</h3>
-                    <div class="flex justify-center space-x-2 text-[11px] font-mono text-cyan-300 mb-3 bg-slate-900/50 p-1 rounded border border-slate-800">
-                        <span>${row[3].replace(/"/g,'')}</span> <span class="text-slate-700">|</span> <span>${row[4].replace(/"/g,'')}</span>
+
+                    <h3 class="text-lg font-bold text-white leading-tight mb-1 border-b border-slate-800/50 pb-1 uppercase overflow-hidden line-clamp-2 min-h-[48px]">${judulClean}</h3>
+                    
+                    <div class="flex items-center justify-center space-x-2 text-[11px] font-mono text-cyan-300 mb-1 bg-slate-900/80 py-1 rounded border border-slate-800">
+                        <span>${formatCell(row[3])}</span> <span class="text-slate-700">|</span> <span>${formatCell(row[4])}</span>
                     </div>
+                    
                     <div class="info-grid">
-                        <div class="info-box"><p class="label-mini">Pengajar</p><div class="val-mini">${formatCell(row[5])}</div></div>
-                        <div class="info-box"><p class="label-mini">Asessor</p><div class="val-mini">${formatCell(row[6])}</div></div>
-                        <div class="info-box"><p class="label-mini">Teknisi</p><div class="val-mini">${formatCell(row[7])}</div></div>
-                        <div class="info-box"><p class="label-mini">LMS / Content</p><div class="val-mini">${formatCell(row[8])}</div></div>
+                        <div class="info-box"><p class="label-mini">Pengajar</p><p class="val-mini">${formatCell(row[5])}</p></div>
+                        <div class="info-box"><p class="label-mini">Asessor</p><p class="val-mini">${formatCell(row[6])}</p></div>
+                        <div class="info-box"><p class="label-mini">Teknisi</p><p class="val-mini">${formatCell(row[7])}</p></div>
+                        <div class="info-box"><p class="label-mini">Digital Content</p><p class="val-mini">${formatCell(row[8])}</p></div>
                     </div>
                 </div>`;
             });
             container.innerHTML = html + `</div></div>`;
         }
 
-        function changeMenu(index) {
-            currentMenu = index;
-            document.querySelectorAll('.sidebar-icon').forEach(el => el.classList.remove('active'));
-            document.getElementById(`nav-${index}`).classList.add('active');
-            if(index === 1) fetchJadwal();
-            else if(index === 0) document.getElementById('display-container').innerHTML = `<div class="flex items-center justify-center h-full"><h1 class="text-7xl font-black italic">DEPARTEMEN <span class="text-cyan-500">LISTRIK</span></h1></div>`;
-            else document.getElementById('display-container').innerHTML = `<iframe src="${config.links[index-1]}"></iframe>`;
+        async function renderContent() {
+            const container = document.getElementById('display-container');
+            container.innerHTML = "";
+            if (currentMenu === 0) {
+                container.innerHTML = `<div class="flex items-center justify-center h-full flex-col text-center uppercase"><h1 class="text-6xl font-black italic">DEPARTEMEN <span class="text-cyan-500">LISTRIK</span></h1></div>`;
+            } else if (currentMenu === 1) {
+                await fetchJadwalData();
+                renderJadwalPage();
+            } else {
+                let url = config.links[currentMenu - 1];
+                if(url) {
+                    if(url.includes('youtube.com/embed')) url += (url.includes('?') ? '&' : '?') + "enablejsapi=1";
+                    container.innerHTML = `<iframe id="content-frame" src="${url}"></iframe>`;
+                }
+            }
         }
 
         function handleAction(type) {
-            if(currentMenu === 1) {
-                const max = Math.ceil(jadwalData.length / 6);
-                currentJadwalPage = type === 'next' ? (currentJadwalPage + 1) % max : (currentJadwalPage - 1 + max) % max;
-                renderJadwal();
+            if (currentMenu === 1) {
+                const maxPages = Math.ceil(jadwalData.length / 6);
+                currentJadwalPage = type === 'next' ? (currentJadwalPage + 1) % maxPages : (currentJadwalPage - 1 + maxPages) % maxPages;
+                renderJadwalPage();
+            } else if (currentMenu === 2) {
+                const frame = document.getElementById('content-frame');
+                frame?.contentWindow.postMessage(JSON.stringify({"event":"command","func":type === 'next' ? 'nextVideo' : 'previousVideo',"args":""}), "*");
             }
         }
 
         function toggleLoop() {
             isLooping = !isLooping;
-            document.getElementById('loopBtn').innerHTML = isLooping ? "⏸️" : "▶️";
-            if(isLooping) loopTimer = setInterval(() => {
-                progress += (100 / (30 * 10));
+            const btn = document.getElementById('loopBtn');
+            btn.innerHTML = isLooping ? "⏸️" : "▶️";
+            if(isLooping) startLoop(); else clearInterval(loopTimer);
+        }
+
+        function startLoop() {
+            clearInterval(loopTimer);
+            loopTimer = setInterval(() => {
+                const dur = config.durasis[currentMenu-1] || 30;
+                progress += (100 / (dur * 10));
                 document.getElementById('progress-bar').style.width = progress + '%';
                 if(progress >= 100) { handleAction('next'); progress = 0; }
             }, 100);
-            else clearInterval(loopTimer);
         }
 
         function toggleAdmin() { document.getElementById('adminModal').classList.toggle('hidden'); document.getElementById('adminModal').classList.toggle('flex'); }
         function saveAdmin() {
             for(let i=0; i<4; i++) config.links[i] = document.getElementById(`l-${i}`).value;
-            localStorage.setItem('boe_v430', JSON.stringify(config));
+            localStorage.setItem('boe_v394', JSON.stringify(config));
             location.reload();
         }
 
-        window.onload = () => changeMenu(0);
+        changeMenu(0);
     </script>
 </body>
 </html>
