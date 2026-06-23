@@ -106,24 +106,39 @@
             renderContent();
         }
 
-        async function fetchJadwalData() {
-            const id = config.links[0];
-            if(!id) return;
-            try {
-                const res = await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=Sheet1`);
-                const text = await res.text();
-                const rows = text.split('\n').slice(1).map(r => 
-                    r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim())
-                );
-                jadwalData = rows.filter(r => r[2] && r[2].length > 5);
-            } catch (e) { console.error("Sync Error"); }
+        async function fetchJadwal() {
+    let id = config.links[0]; // Berisi kode 2PACX-... Mas
+    if(!id) return;
+    try {
+        let url = "";
+        
+        // JIKA MAS MENGGUNAKAN PUBLISH ID (2PACX-...)
+        if (id.startsWith("2PACX-")) {
+            // Kita paksa Google mengekspor ke format /pub?output=csv dan targetkan GID (Sheet ID) yang tepat
+            url = `https://docs.google.com/spreadsheets/d/e/${id}/pub?output=csv&gid=57327150`;
+        } else {
+            // JIKA MENGGUNAKAN SPREADSHEET ID EDIT BIASA
+            url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
         }
 
-        function renderJadwalPage() {
-            const container = document.getElementById('display-container');
-            const itemsPerPage = 6;
-            const start = currentJadwalPage * itemsPerPage;
-            const pageData = jadwalData.slice(start, start + itemsPerPage);
+        const res = await fetch(url);
+        
+        // Validasi Enterprise: Cek apakah response-nya valid
+        if (!res.ok) throw new Error("Gagal mengambil data dari Google");
+        
+        const text = await res.text();
+        
+        // Parsing data baris per baris
+        jadwalData = text.split('\n').slice(1).map(r => 
+            r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim())
+        ).filter(r => r[2] && r[2].length > 5 && !r[2].includes("DOCTYPE") && !r[2].includes("<script>"));
+        
+        renderJadwal();
+    } catch (e) { 
+        console.error("Sync Failed:", e); 
+        document.getElementById('display-container').innerHTML = `<div class="text-center p-10 text-red-400">Gagal memuat data. Pastikan ID Spreadsheet di panel ⚙️ sudah benar.</div>`;
+    }
+}
 
             let html = `
             <div class="p-4 h-screen flex flex-col">
