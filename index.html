@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOE Enterprise CMS Signage - v4.6.0 Secure Edition</title>
+    <title>BOE Enterprise CMS Signage - v4.6.1 Production</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -15,29 +15,39 @@
         .media-layout { display: flex; height: 100vh; width: 100%; }
         .media-sidebar { width: 320px; background: #090d16; border-right: 1px solid #1e293b; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
         .media-viewer { flex: 1; background: #000; position: relative; }
-        .jadwal-card { background: linear-gradient(145deg, #0f172a, #020617); border: 1px solid #1e293b; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; height: 100%; justify-content: flex-start; /* TRIK: Mengubah dari space-between agar semua elemen mampat ke atas */
-    gap: 10px; /* TRIK: Mengunci jarak antar komponen agar rapat dan konsisten */
-}
-       .info-grid { 
-    display: grid; 
-    grid-template-cols: 1fr 1fr; 
-    gap: 6px; 
-    flex-grow: 1; /* TRIK: Memaksa grid pengajar memanfaatkan sisa ruang bawah secara otomatis */
-}
-
-.info-box { 
-    background: rgba(30, 41, 59, 0.25); 
-    padding: 8px 10px; 
-    border-radius: 8px; 
-    border: 1px solid rgba(51, 65, 85, 0.3); 
-    height: 100%; /* Membuat tinggi kotak mengikuti elastisitas grid */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    overflow-y: auto;
-}
+        
+        /* TATA LETAK JADWAL OPTIMAL (MAMPAT KE ATAS & LEGA DI BAWAH) */
+        .jadwal-card { 
+            background: linear-gradient(145deg, #0f172a, #020617); 
+            border: 1px solid #1e293b; 
+            border-radius: 14px; 
+            padding: 14px; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100%; 
+            justify-content: flex-start; 
+            gap: 10px; 
+        }
+        .info-grid { 
+            display: grid; 
+            grid-template-cols: 1fr 1fr; 
+            gap: 6px; 
+            flex-grow: 1; 
+        }
+        .info-box { 
+            background: rgba(30, 41, 59, 0.25); 
+            padding: 8px 10px; 
+            border-radius: 8px; 
+            border: 1px solid rgba(51, 65, 85, 0.3); 
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
         .info-box::-webkit-scrollbar { width: 3px; }
         .info-box::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        
         .label-mini { font-size: 9px; color: #475569; font-weight: 800; text-transform: uppercase; margin-bottom: 1px; }
         .val-mini { font-size: 12px; color: #e2e8f0; font-weight: 500; line-height: 1.2; }
         .judul-diklat { font-size: 15px; font-weight: 800; color: white; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px; text-transform: uppercase; }
@@ -46,7 +56,7 @@
         .group:hover .tooltip-text { opacity: 1; visibility: visible; transform: translate(0, -50%) scale(1); }
         .list-item-active { background: rgba(34, 211, 238, 0.08) !important; border-color: #22d3ee !important; color: #22d3ee !important; }
         
-        /* Trik UI: Custom Scrollbar halus untuk modal settings */
+        /* Custom Scrollbar Halus untuk Modal Settings */
         .admin-scroll::-webkit-scrollbar { width: 6px; }
         .admin-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
@@ -55,7 +65,6 @@
 
     <div id="progress-bar"></div>
 
-    <!-- SIDEBAR MAIN NAVIGATION -->
     <nav class="w-20 h-screen bg-slate-950 flex flex-col items-center py-6 space-y-6 border-r border-slate-900 z-50">
         <div class="text-cyan-500 font-black text-xl italic mb-4 tracking-tighter">BOE</div>
         
@@ -84,7 +93,6 @@
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Modul Buku Digital</span>
         </div>
 
-        <!-- 🎮 UPDATE MENU: KONTEN INTERAKTIF (TANPA KATA LUMI) -->
         <div class="relative group">
             <button onclick="changeMenu(5)" class="sidebar-icon text-2xl p-2 rounded-xl" id="nav-5">🎮</button>
             <span class="tooltip-text absolute left-20 top-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 visibility-hidden transition-all duration-200 scale-95 shadow-xl pointer-events-none z-[999]">Konten Interaktif</span>
@@ -101,12 +109,10 @@
         <button onclick="toggleAdmin()" class="sidebar-icon text-xl opacity-20 p-2">⚙️</button>
     </nav>
 
-    <!-- MAIN VIEWPORT DISPLAY -->
     <main class="flex-1 h-screen relative bg-[#020617]" id="main-display">
         <div id="display-container" class="w-full h-full"></div>
     </main>
 
-    <!-- ADMIN SYSTEM CONFIG MODAL (Trik UI: Ditambahkan batas tinggi max-h & overflow scroll) -->
     <div id="adminModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[100] p-4">
         <div class="bg-slate-900 p-8 rounded-2xl w-full max-w-lg border border-slate-700 text-left max-h-[85vh] overflow-y-auto admin-scroll">
             <h2 class="text-cyan-400 font-bold mb-4 uppercase tracking-widest text-sm sticky top-0 bg-slate-900 pb-2">Enterprise GID System Configuration</h2>
